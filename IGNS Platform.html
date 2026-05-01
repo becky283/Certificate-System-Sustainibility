@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IGNS — Indonesia Green Nickel Standard</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue-dark:   #1a4480;
+    --blue-mid:    #2563a8;
+    --blue-light:  #dbeafe;
+    --blue-pale:   #eff6ff;
+    --green-dark:  #276041;
+    --green-mid:   #3a8c5c;
+    --green-light: #d1fae5;
+    --green-pale:  #f0fdf4;
+    --green-acc:   #16a34a;
+    --bg:          #f8faf8;
+    --bg-card:     #ffffff;
+    --bg-section:  #f2f7f4;
+    --border:      #d4e4da;
+    --border-mid:  #b4cfc0;
+    --text-1:      #1a2e22;
+    --text-2:      #4a6857;
+    --text-3:      #8aab96;
+    --gold:        #b45309;
+    --gold-light:  #fef3c7;
+    --red:         #dc2626;
+    --amber:       #d97706;
+    --sky:         #0369a1;
+    --sky-light:   #e0f2fe;
+    --font-body:   'Plus Jakarta Sans', sans-serif;
+    --font-mono:   'DM Mono', monospace;
+    --shadow-sm:   0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md:   0 4px 12px rgba(0,0,0,.07), 0 2px 6px rgba(0,0,0,.04);
+  }
+  html, body { height: 100%; background: var(--bg); color: var(--text-1); font-family: var(--font-body); font-size: 14px; line-height: 1.5; }
+  #root { min-height: 100vh; display: flex; flex-direction: column; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 3px; }
+  @keyframes fadeInUp  { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.7)} }
+  @keyframes flow      { 0%{stroke-dashoffset:30} 100%{stroke-dashoffset:0} }
+  @keyframes drawLine  { from{stroke-dashoffset:1000} to{stroke-dashoffset:0} }
+  /* Tweaks */
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:9999;width:260px;max-height:calc(100vh - 32px);display:flex;flex-direction:column;background:#fff;color:#1a2e22;border:1px solid #d4e4da;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.12);font:12px/1.4 'Plus Jakarta Sans',sans-serif;overflow:hidden}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 10px 10px 14px;cursor:move;user-select:none;border-bottom:1px solid #d4e4da;background:#f0fdf4}
+  .twk-hd b{font-size:12px;font-weight:700;color:#276041}
+  .twk-x{appearance:none;border:0;background:transparent;color:#8aab96;width:22px;height:22px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .twk-x:hover{background:#d1fae5;color:#276041}
+  .twk-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto}
+  .twk-sect{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#8aab96;padding:4px 0 0}
+  .twk-row-h{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{font-size:11.5px;color:#4a6857;font-weight:500}
+  .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;background:#d4e4da;transition:background .15s;cursor:pointer;padding:0;flex-shrink:0}
+  .twk-toggle[data-on="1"]{background:#16a34a}
+  .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .15s;pointer-events:none}
+  .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+  .twk-swatch{appearance:none;-webkit-appearance:none;width:52px;height:26px;border:1.5px solid #d4e4da;border-radius:6px;padding:2px;cursor:pointer;flex-shrink:0}
+  .twk-swatch::-webkit-color-swatch-wrapper{padding:0}
+  .twk-swatch::-webkit-color-swatch{border:0;border-radius:4px}
+  /* Map tooltip */
+  .map-tooltip{position:absolute;pointer-events:none;background:#fff;border:1.5px solid var(--border-mid);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow-md);min-width:180px;z-index:10;animation:fadeInUp .15s ease both}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+/* ── Tweaks ── */
+function useTweaks(defaults) {
+  const [v, setV] = useState(defaults);
+  const set = useCallback((k, val) => {
+    const e = typeof k==='object' ? k : {[k]:val};
+    setV(p=>({...p,...e}));
+    window.parent.postMessage({type:'__edit_mode_set_keys',edits:e},'*');
+  },[]);
+  return [v, set];
+}
+function TweaksPanel({children}) {
+  const [open,setOpen]=useState(false);
+  const ref=useRef(null); const off=useRef({x:16,y:16});
+  useEffect(()=>{
+    const h=e=>{
+      if(e.data?.type==='__activate_edit_mode') setOpen(true);
+      if(e.data?.type==='__deactivate_edit_mode') setOpen(false);
+    };
+    window.addEventListener('message',h);
+    window.parent.postMessage({type:'__edit_mode_available'},'*');
+    return ()=>window.removeEventListener('message',h);
+  },[]);
+  const dismiss=()=>{setOpen(false);window.parent.postMessage({type:'__edit_mode_dismissed'},'*');};
+  const drag=e=>{
+    const r=ref.current.getBoundingClientRect();
+    const sx=e.clientX,sy=e.clientY,sr=window.innerWidth-r.right,sb=window.innerHeight-r.bottom;
+    const mv=ev=>{off.current={x:Math.max(8,sr-(ev.clientX-sx)),y:Math.max(8,sb-(ev.clientY-sy))};ref.current.style.right=off.current.x+'px';ref.current.style.bottom=off.current.y+'px';};
+    const up=()=>{window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);};
+    window.addEventListener('mousemove',mv);window.addEventListener('mouseup',up);
+  };
+  if(!open) return null;
+  return <div ref={ref} className="twk-panel" style={{right:off.current.x,bottom:off.current.y}}><div className="twk-hd" onMouseDown={drag}><b>Tweaks</b><button className="twk-x" onMouseDown={e=>e.stopPropagation()} onClick={dismiss}>✕</button></div><div className="twk-body">{children}</div></div>;
+}
+function TweakSection({label,children}){return <><div className="twk-sect">{label}</div>{children}</>;}
+function TweakColor({label,value,onChange}){return <div className="twk-row-h"><span className="twk-lbl">{label}</span><input type="color" className="twk-swatch" value={value} onChange={e=>onChange(e.target.value)}/></div>;}
+function TweakToggle({label,value,onChange}){return <div className="twk-row-h"><span className="twk-lbl">{label}</span><button type="button" className="twk-toggle" data-on={value?'1':'0'} onClick={()=>onChange(!value)}><i/></button></div>;}
+
+/* ── DATA ── */
+const SUPPLY_CHAIN_NODES = [
+  {id:'mine',      label:'Tambang Nikel', sub:'Sulawesi Tengah',          icon:'⛏',  co2:12.4, energy:'Diesel 60% / Solar 40%',     social:87, status:'verified'},
+  {id:'smelt',     label:'Smelter RKEF',  sub:'Morowali Industrial Park', icon:'🏭', co2:34.2, energy:'PLTU 45% / Gas 55%',           social:82, status:'verified'},
+  {id:'refine',    label:'Refinery HP',   sub:'Batang Industrial Estate', icon:'🔬', co2:8.7,  energy:'Geotermal 70% / Grid 30%',    social:91, status:'verified'},
+  {id:'precursor', label:'Prekursor NMC', sub:'Karawang New Industry',    icon:'⚗️', co2:6.1,  energy:'PLN Hijau 85% / Solar 15%',   social:94, status:'certified'},
+];
+
+const CERTIFICATES = [
+  {id:'IGNS-2025-0041',product:'Nikel Kelas 1 — NMC-811',origin:'Sulawesi Tengah',  co2Total:61.4,premium:4.2,issued:'2025-01-15',expires:'2026-01-14',status:'active',  buyer:'CATL (Fujian)',      grade:'A+'},
+  {id:'IGNS-2025-0039',product:'Nikel Kelas 1 — NMC-622',origin:'Sulawesi Tenggara',co2Total:58.9,premium:3.8,issued:'2025-01-10',expires:'2026-01-09',status:'active',  buyer:'LG Energy (Korea)',  grade:'A' },
+  {id:'IGNS-2025-0037',product:'Nikel Kelas 1 — NMC-532',origin:'Maluku Utara',     co2Total:72.1,premium:3.1,issued:'2024-12-22',expires:'2025-12-21',status:'active',  buyer:'Panasonic (Japan)',  grade:'B+'},
+  {id:'IGNS-2024-0201',product:'Nikel Kelas 1 — NMC-111',origin:'Sulawesi Tengah',  co2Total:95.3,premium:2.2,issued:'2024-06-01',expires:'2025-05-31',status:'expiring',buyer:'Samsung SDI (Korea)',grade:'B' },
+];
+
+const STATS = [
+  {label:'Sertifikat Aktif',        value:'412', unit:'sertifikat',delta:'+23%',   color:'var(--green-acc)'},
+  {label:'Rerata Premium Harga',    value:'3.7', unit:'%',         delta:'+0.4pp', color:'var(--gold)'},
+  {label:'Total CO₂ Terverifikasi', value:'2.14',unit:'Mt',        delta:'-8% YoY',color:'var(--sky)'},
+  {label:'Mitra Rantai Pasok',      value:'138', unit:'entitas',   delta:'+17',    color:'var(--green-dark)'},
+];
+
+const ENERGY_DATA = [
+  {label:'PLTU Batubara',pct:28,color:'#f97316'},
+  {label:'Gas Alam',     pct:19,color:'#eab308'},
+  {label:'Geotermal',   pct:22,color:'#0ea5e9'},
+  {label:'Solar / Surya',pct:18,color:'#facc15'},
+  {label:'PLN Hijau',   pct:13,color:'#22c55e'},
+];
+
+/* Trend data: monthly CO2 intensity per lot grade */
+const TREND_MONTHS = ['Jan 24','Mar 24','Mei 24','Jul 24','Sep 24','Nov 24','Jan 25','Mar 25'];
+const TREND_DATA = {
+  'A+': [78, 73, 70, 66, 63, 62, 61, 58],
+  'A':  [95, 91, 88, 85, 82, 80, 77, 74],
+  'B+': [118,114,110,106,103, 99, 95, 92],
+  'Global': [138,137,135,134,133,132,131,130],
+};
+const TREND_COLORS = {'A+':'#16a34a','A':'#3a8c5c','B+':'#d97706','Global':'#94a3b8'};
+
+/* Map locations — coords in viewBox space 200×100 (matches 2:1 container)
+   x = 0–200 (left to right), y = 0–100 (top to bottom) */
+const MAP_LOCATIONS = [
+  // Halmahera / Maluku Utara — x~147–155, y~30–50
+  {id:1, name:'PT Harita Nickel',    region:'Maluku Utara',      type:'mine',      grade:'A+', co2:58,  x:150,  y:44},
+  {id:6, name:'PT Weda Bay Nickel',  region:'Maluku Utara',      type:'mine',      grade:'A',  co2:76,  x:146,  y:36},
+  // Sulawesi — x~120–135, y~30–65
+  {id:2, name:'PT IMIP Morowali',    region:'Sulawesi Tengah',   type:'smelter',   grade:'A',  co2:89,  x:124,  y:47},
+  {id:10,name:'PT Sulawesi Mining',  region:'Sulawesi Utara',    type:'mine',      grade:'B',  co2:118, x:130,  y:33},
+  {id:3, name:'PT Vale Indonesia',   region:'Sulawesi Selatan',  type:'mine',      grade:'B+', co2:94,  x:122,  y:60},
+  {id:4, name:'PT Antam Tbk',        region:'Sulawesi Tenggara', type:'mine',      grade:'A',  co2:71,  x:128,  y:57},
+  {id:5, name:'PT HPAL Pomalaa',     region:'Sulawesi Tenggara', type:'refinery',  grade:'A+', co2:49,  x:126,  y:63},
+  // Jawa — x~80–112, y~63–70
+  {id:7, name:'PT Batang Precursor', region:'Jawa Tengah',       type:'precursor', grade:'A+', co2:41,  x:93,   y:66},
+  {id:8, name:'PT Karawang NMC',     region:'Jawa Barat',        type:'precursor', grade:'A+', co2:38,  x:82,   y:65},
+  // Papua Barat — x~164–170, y~38–45
+  {id:9, name:'PT Gag Nickel',       region:'Papua Barat',       type:'mine',      grade:'B+', co2:102, x:166,  y:40},
+];
+
+const TYPE_COLORS = {mine:'#16a34a', smelter:'#d97706', refinery:'#0369a1', precursor:'#7c3aed'};
+const TYPE_LABELS = {mine:'Tambang', smelter:'Smelter', refinery:'Refinery', precursor:'Prekursor NMC'};
+
+/* ── Shared UI ── */
+function LiveDot({color='var(--green-acc)',size=8}){
+  return <span style={{display:'inline-block',width:size,height:size,borderRadius:'50%',background:color,animation:'pulse-dot 2s ease-in-out infinite',flexShrink:0}}/>;
+}
+function Badge({text,color='var(--green-acc)',bg='var(--green-light)'}){
+  return <span style={{background:bg,color,borderRadius:4,padding:'2px 8px',fontSize:11,fontFamily:'var(--font-mono)',fontWeight:600,letterSpacing:'0.04em',whiteSpace:'nowrap'}}>{text}</span>;
+}
+function Card({children,style,onClick}){
+  const [hov,setHov]=useState(false);
+  return <div onClick={onClick} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)} style={{background:'var(--bg-card)',border:`1.5px solid ${hov&&onClick?'var(--green-mid)':'var(--border)'}`,borderRadius:10,padding:'20px 24px',boxShadow:hov&&onClick?'var(--shadow-md)':'var(--shadow-sm)',transition:'all .18s',cursor:onClick?'pointer':'default',...style}}>{children}</div>;
+}
+function SectionLabel({text}){
+  return <div style={{fontSize:10.5,fontFamily:'var(--font-mono)',color:'var(--text-3)',letterSpacing:'0.1em',textTransform:'uppercase',marginBottom:6}}>{text}</div>;
+}
+function CarbonBar({value,max=120}){
+  const pct=(value/max)*100;
+  const color=pct<55?'var(--green-acc)':pct<75?'var(--amber)':'var(--red)';
+  return <div><div style={{height:6,background:'var(--bg-section)',borderRadius:3,overflow:'hidden'}}><div style={{height:'100%',width:`${pct}%`,background:color,borderRadius:3,transition:'width .6s'}}/></div><div style={{fontSize:11,color,fontFamily:'var(--font-mono)',marginTop:3}}>{value} kg CO₂e/t Ni</div></div>;
+}
+
+/* ── Header ── */
+function Header({activeTab,setActiveTab}){
+  const tabs=[
+    {id:'dashboard',   label:'Dashboard'},
+    {id:'supplychain', label:'Rantai Pasok'},
+    {id:'certificates',label:'Sertifikat'},
+    {id:'tren',        label:'Tren CO₂'},
+    {id:'peta',        label:'Peta Sebaran'},
+  ];
+  return (
+    <header style={{background:'#fff',borderBottom:'1.5px solid var(--border)',position:'sticky',top:0,zIndex:100,padding:'0 32px',display:'flex',alignItems:'center',gap:28,boxShadow:'0 1px 4px rgba(0,0,0,.05)'}}>
+      <div style={{display:'flex',alignItems:'center',gap:14,padding:'12px 0',flexShrink:0}}>
+        <img src="kemenperin-logo.png" alt="Kemenperin" style={{height:38,width:'auto'}}/>
+        <div style={{width:1,height:30,background:'var(--border)'}}/>
+        <div>
+          <div style={{fontWeight:800,fontSize:14,letterSpacing:'0.06em',color:'var(--green-dark)'}}>IGNS</div>
+          <div style={{fontSize:9.5,color:'var(--text-3)',fontFamily:'var(--font-mono)',letterSpacing:'0.07em',textTransform:'uppercase'}}>Indonesia Green Nickel Standard</div>
+        </div>
+      </div>
+      <nav style={{display:'flex',gap:2,flex:1}}>
+        {tabs.map(tab=>(
+          <button key={tab.id} onClick={()=>setActiveTab(tab.id)} style={{background:activeTab===tab.id?'var(--green-pale)':'transparent',border:`1.5px solid ${activeTab===tab.id?'var(--border-mid)':'transparent'}`,color:activeTab===tab.id?'var(--green-dark)':'var(--text-2)',borderRadius:8,padding:'7px 15px',fontSize:13,fontWeight:activeTab===tab.id?700:500,cursor:'pointer',transition:'all .14s',fontFamily:'var(--font-body)'}}>
+            {tab.label}
+          </button>
+        ))}
+      </nav>
+      <div style={{display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
+        <div style={{display:'flex',alignItems:'center',gap:6,fontSize:12,color:'var(--text-2)'}}><LiveDot size={7}/><span style={{fontFamily:'var(--font-mono)',fontSize:11}}>Live</span></div>
+        <div style={{background:'var(--blue-pale)',border:'1.5px solid var(--blue-light)',borderRadius:8,padding:'5px 12px',fontSize:11.5,color:'var(--blue-dark)',fontWeight:600}}>Kemenperin · KLHK · BSN</div>
+      </div>
+    </header>
+  );
+}
+
+/* ── Dashboard ── */
+function StatCard({label,value,unit,delta,color,delay=0}){
+  const [disp,setDisp]=useState('0');
+  useEffect(()=>{const t=setTimeout(()=>setDisp(value),delay);return()=>clearTimeout(t);},[value,delay]);
+  const pos=delta.startsWith('+');
+  return (
+    <Card style={{animation:`fadeInUp .45s ease ${delay}ms both`}}>
+      <SectionLabel text={label}/>
+      <div style={{display:'flex',alignItems:'baseline',gap:6,marginBottom:6}}>
+        <span style={{fontSize:34,fontWeight:800,color,lineHeight:1,fontVariantNumeric:'tabular-nums'}}>{disp}</span>
+        <span style={{fontSize:15,color:'var(--text-2)',fontWeight:500}}>{unit}</span>
+      </div>
+      <div style={{fontSize:12,color:pos?'var(--green-acc)':'var(--red)',fontFamily:'var(--font-mono)',display:'flex',alignItems:'center',gap:4}}>
+        <span>{pos?'▲':'▼'}</span><span>{delta} vs tahun lalu</span>
+      </div>
+    </Card>
+  );
+}
+
+function EnergyDonut(){
+  const size=128,cx=64,cy=64,r=48,circ=2*Math.PI*r;
+  let acc=0;
+  const segs=ENERGY_DATA.map(d=>{const dash=(d.pct/100)*circ,offset=-acc*circ/100-circ*.25;acc+=d.pct;return{...d,dash,gap:circ-dash,offset};});
+  return (
+    <div style={{display:'flex',gap:24,alignItems:'center'}}>
+      <svg width={size} height={size} style={{flexShrink:0}}>
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--bg-section)" strokeWidth={16}/>
+        {segs.map((s,i)=><circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={s.color} strokeWidth={16} strokeDasharray={`${s.dash} ${s.gap}`} strokeDashoffset={s.offset} strokeLinecap="round"/>)}
+        <text x={cx} y={cy-5} textAnchor="middle" fill="var(--green-dark)" fontSize={17} fontWeight={800} fontFamily="'Plus Jakarta Sans',sans-serif">31%</text>
+        <text x={cx} y={cy+11} textAnchor="middle" fill="var(--text-3)" fontSize={9} fontFamily="'DM Mono',monospace" letterSpacing="1">HIJAU</text>
+      </svg>
+      <div style={{display:'flex',flexDirection:'column',gap:7}}>
+        {ENERGY_DATA.map(d=>(
+          <div key={d.label} style={{display:'flex',alignItems:'center',gap:8}}>
+            <div style={{width:9,height:9,borderRadius:2,background:d.color,flexShrink:0}}/>
+            <span style={{fontSize:12,color:'var(--text-2)',flex:1}}>{d.label}</span>
+            <span style={{fontSize:11,fontFamily:'var(--font-mono)',fontWeight:500}}>{d.pct}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DashboardView(){
+  return (
+    <div style={{padding:'32px 32px 48px',maxWidth:1200,margin:'0 auto',width:'100%'}}>
+      {/* Hero */}
+      <div style={{borderRadius:14,padding:'32px 36px',background:'linear-gradient(135deg,#f0fdf4 0%,#dbeafe 100%)',border:'1.5px solid var(--border)',marginBottom:28,position:'relative',overflow:'hidden',animation:'fadeInUp .4s ease both'}}>
+        <div style={{position:'absolute',top:0,right:0,width:320,height:'100%',background:'url("kemenperin-logo.png") no-repeat center right 32px / 180px auto',opacity:.06,pointerEvents:'none'}}/>
+        <div style={{position:'relative',zIndex:1,display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:24}}>
+          <div>
+            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
+              <Badge text="DIAKUI INTERNASIONAL" color="var(--blue-dark)" bg="var(--blue-light)"/>
+              <Badge text="ISO 14064-ALIGNED" color="var(--sky)" bg="var(--sky-light)"/>
+              <Badge text="IPCC AR6" color="var(--text-2)" bg="var(--bg-section)"/>
+            </div>
+            <h1 style={{fontSize:28,fontWeight:800,lineHeight:1.25,marginBottom:10,color:'var(--text-1)'}}>
+              Indonesia Green Nickel Standard<br/>
+              <span style={{color:'var(--green-dark)',fontSize:22}}>Sertifikasi ESG Nikel Nasional</span>
+            </h1>
+            <p style={{fontSize:14,color:'var(--text-2)',maxWidth:520,lineHeight:1.7}}>
+              Skema sertifikasi yang dirancang oleh <strong style={{color:'var(--blue-dark)'}}>Kemenperin, KLHK, dan BSN</strong> untuk memastikan nikel Indonesia memenuhi standar lingkungan dan sosial internasional — meraih premium harga <strong style={{color:'var(--green-dark)'}}>3–5%</strong> di pasar baterai global.
+            </p>
+          </div>
+          <div style={{background:'#fff',border:'1.5px solid var(--border)',borderRadius:12,padding:'20px 24px',textAlign:'right',boxShadow:'var(--shadow-md)',flexShrink:0}}>
+            <div style={{fontSize:10.5,color:'var(--text-3)',fontFamily:'var(--font-mono)',letterSpacing:'0.08em',marginBottom:4}}>PREMIUM HARGA KELAS 1</div>
+            <div style={{fontSize:44,fontWeight:800,color:'var(--gold)',lineHeight:1}}>3–5%</div>
+            <div style={{fontSize:12,color:'var(--text-2)',marginTop:4}}>vs. produk tanpa sertifikasi</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(210px,1fr))',gap:16,marginBottom:24}}>
+        {STATS.map((s,i)=><StatCard key={s.label} {...s} delay={i*70}/>)}
+      </div>
+
+      {/* Middle row */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:16}}>
+        <Card style={{animation:'fadeInUp .5s ease 280ms both'}}>
+          <SectionLabel text="Mix Energi — Seluruh Rantai Pasok"/>
+          <EnergyDonut/>
+        </Card>
+        <Card style={{animation:'fadeInUp .5s ease 360ms both'}}>
+          <SectionLabel text="Benchmark CO₂ vs. Pasar Global"/>
+          <div style={{display:'flex',flexDirection:'column',gap:11}}>
+            {[
+              {label:'IGNS Kelas 1 (A+)',    val:58, color:'var(--green-acc)'},
+              {label:'IGNS Kelas 1 (B)',     val:92, color:'var(--green-mid)'},
+              {label:'Rerata Global',        val:130,color:'var(--amber)'},
+              {label:'Produsen Konvensional',val:175,color:'var(--red)'},
+            ].map(item=>(
+              <div key={item.label} style={{display:'flex',alignItems:'center',gap:10}}>
+                <div style={{width:168,fontSize:12,color:'var(--text-2)',flexShrink:0}}>{item.label}</div>
+                <div style={{flex:1,height:9,background:'var(--bg-section)',borderRadius:5,overflow:'hidden'}}>
+                  <div style={{height:'100%',width:`${(item.val/200)*100}%`,background:item.color,borderRadius:5}}/>
+                </div>
+                <div style={{width:36,textAlign:'right',fontSize:12,fontFamily:'var(--font-mono)',color:item.color,fontWeight:600,flexShrink:0}}>{item.val}</div>
+              </div>
+            ))}
+            <div style={{fontSize:10.5,color:'var(--text-3)',fontFamily:'var(--font-mono)',marginTop:2}}>kg CO₂e / ton Ni</div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Steps */}
+      <Card style={{animation:'fadeInUp .5s ease 440ms both'}}>
+        <SectionLabel text="Proses Sertifikasi IGNS"/>
+        <div style={{display:'flex',gap:8,overflowX:'auto',paddingBottom:4}}>
+          {[
+            {step:'01',title:'Pendaftaran',      desc:'Produsen mendaftar ke portal IGNS dengan data operasional',          icon:'📋',col:'#dbeafe',border:'#93c5fd'},
+            {step:'02',title:'Audit Lapangan',   desc:'Auditor terakreditasi memverifikasi tambang, smelter & refinery',    icon:'🔍',col:'#fef9c3',border:'#fde047'},
+            {step:'03',title:'Rekam Data',       desc:'Data karbon, energi & sosial direkam ke sistem terpadu',            icon:'📒',col:'#d1fae5',border:'#6ee7b7'},
+            {step:'04',title:'Penilaian Grade',  desc:'Algoritma IGNS menghitung grade A+/A/B+ berdasarkan skor ESG',       icon:'🏅',col:'#fce7f3',border:'#f9a8d4'},
+            {step:'05',title:'Terbit Sertifikat',desc:'BSN menerbitkan sertifikat dengan QR verifikasi publik',             icon:'✅',col:'#d1fae5',border:'#34d399'},
+            {step:'06',title:'Premium Pasar',    desc:'Produk tersertifikasi mendapat harga premium 3–5% dari pembeli',    icon:'💹',col:'#fef3c7',border:'#fbbf24'},
+          ].map(item=>(
+            <div key={item.step} style={{flex:'1 1 140px',minWidth:130,background:item.col,border:`1.5px solid ${item.border}`,borderRadius:10,padding:'14px 14px 16px'}}>
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+                <span style={{fontSize:20}}>{item.icon}</span>
+                <span style={{fontFamily:'var(--font-mono)',fontSize:10,color:'var(--text-3)',fontWeight:500}}>LANGKAH {item.step}</span>
+              </div>
+              <div style={{fontWeight:700,fontSize:13,marginBottom:5}}>{item.title}</div>
+              <div style={{fontSize:11.5,color:'var(--text-2)',lineHeight:1.5}}>{item.desc}</div>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+/* ── Supply Chain ── */
+function SupplyChainView(){
+  const [selected,setSelected]=useState(null);
+  return (
+    <div style={{padding:'32px 32px 48px',maxWidth:1200,margin:'0 auto',width:'100%'}}>
+      <div style={{marginBottom:28}}>
+        <SectionLabel text="Modul — Rantai Pasok"/>
+        <h2 style={{fontSize:24,fontWeight:800}}>Traceability Rantai Pasok Nikel</h2>
+        <p style={{color:'var(--text-2)',fontSize:13.5,marginTop:6,maxWidth:600,lineHeight:1.65}}>Sistem IGNS merekam setiap tahap produksi mulai dari tambang hingga prekursor NMC, termasuk intensitas karbon, sumber energi, dan dampak sosial secara real-time.</p>
+      </div>
+      <div style={{display:'flex',alignItems:'stretch',gap:0,marginBottom:32,overflowX:'auto',paddingBottom:8}}>
+        {SUPPLY_CHAIN_NODES.map((node,i)=>(
+          <React.Fragment key={node.id}>
+            <div onClick={()=>setSelected(selected?.id===node.id?null:node)} style={{flex:'1 1 220px',minWidth:200,background:selected?.id===node.id?'var(--green-pale)':'var(--bg-card)',border:`1.5px solid ${selected?.id===node.id?'var(--green-mid)':'var(--border)'}`,borderRadius:12,padding:'22px 18px',cursor:'pointer',transition:'all .18s',position:'relative',boxShadow:selected?.id===node.id?'0 0 0 3px #3a8c5c22':'var(--shadow-sm)'}}>
+              <div style={{position:'absolute',top:-1,left:16,background:selected?.id===node.id?'var(--green-mid)':'var(--bg-section)',color:selected?.id===node.id?'#fff':'var(--text-3)',borderRadius:'0 0 6px 6px',padding:'2px 10px',fontSize:10,fontFamily:'var(--font-mono)',fontWeight:600}}>TAHAP {i+1}</div>
+              <div style={{marginTop:14}}>
+                <div style={{fontSize:26,marginBottom:10}}>{node.icon}</div>
+                <div style={{fontWeight:700,fontSize:14,marginBottom:2}}>{node.label}</div>
+                <div style={{fontSize:12,color:'var(--text-3)',marginBottom:14,lineHeight:1.4}}>{node.sub}</div>
+                <div style={{display:'flex',flexDirection:'column',gap:9}}>
+                  <div><div style={{fontSize:10,color:'var(--text-3)',fontFamily:'var(--font-mono)',marginBottom:4}}>CO₂ INTENSITAS</div><CarbonBar value={node.co2}/></div>
+                  <div style={{fontSize:12,color:'var(--text-2)',lineHeight:1.5}}><span style={{color:'var(--text-3)',fontFamily:'var(--font-mono)',fontSize:10}}>ENERGI: </span>{node.energy}</div>
+                  <Badge text={node.status==='certified'?'✓ Tersertifikasi':'✓ Terverifikasi'} color={node.status==='certified'?'var(--gold)':'var(--green-dark)'} bg={node.status==='certified'?'var(--gold-light)':'var(--green-light)'}/>
+                  <div style={{display:'flex',alignItems:'center',gap:6}}>
+                    <div style={{fontSize:11,color:'var(--text-3)',whiteSpace:'nowrap'}}>Skor Sosial</div>
+                    <div style={{flex:1,height:5,background:'var(--bg-section)',borderRadius:3}}><div style={{width:`${node.social}%`,height:'100%',background:'var(--sky)',borderRadius:3}}/></div>
+                    <div style={{fontSize:11,color:'var(--sky)',fontFamily:'var(--font-mono)',fontWeight:600}}>{node.social}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {i<SUPPLY_CHAIN_NODES.length-1&&(
+              <div style={{display:'flex',alignItems:'center',justifyContent:'center',padding:'0 4px',flexShrink:0}}>
+                <svg width="32" height="24" viewBox="0 0 32 24">
+                  <defs><marker id={`arr${i}`} markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--green-mid)"/></marker></defs>
+                  <line x1="2" y1="12" x2="26" y2="12" stroke="var(--green-mid)" strokeWidth="2" strokeDasharray="4 3" markerEnd={`url(#arr${i})`} style={{animation:'flow 1.2s linear infinite'}}/>
+                </svg>
+              </div>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+      {selected&&(
+        <Card style={{animation:'fadeInUp .22s ease both',borderColor:'var(--border-mid)',background:'var(--green-pale)'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:18}}>
+            <div><SectionLabel text="Detail Tahap"/><h3 style={{fontSize:19,fontWeight:700}}>{selected.icon} {selected.label}</h3><div style={{color:'var(--text-2)',fontSize:13}}>{selected.sub}</div></div>
+            <button onClick={()=>setSelected(null)} style={{background:'var(--bg-section)',border:'1px solid var(--border)',color:'var(--text-2)',borderRadius:6,width:28,height:28,cursor:'pointer',fontSize:16}}>×</button>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:14}}>
+            {[
+              {label:'Intensitas Karbon', value:`${selected.co2} kg CO₂e/t Ni`,color:selected.co2<20?'var(--green-acc)':selected.co2<40?'var(--amber)':'var(--red)'},
+              {label:'Mix Energi',        value:selected.energy,                color:'var(--sky)'},
+              {label:'Skor Dampak Sosial',value:`${selected.social} / 100`,     color:'var(--sky)'},
+              {label:'Status Verifikasi', value:selected.status==='certified'?'Tersertifikasi IGNS':'Terverifikasi Auditor',color:'var(--green-dark)'},
+            ].map(item=>(
+              <div key={item.label} style={{background:'#fff',borderRadius:8,padding:'13px 16px',border:'1.5px solid var(--border)'}}>
+                <div style={{fontSize:10,color:'var(--text-3)',fontFamily:'var(--font-mono)',marginBottom:5,letterSpacing:'0.06em'}}>{item.label.toUpperCase()}</div>
+                <div style={{fontSize:14,fontWeight:700,color:item.color}}>{item.value}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+/* ── Certificates ── */
+function CertificatesView(){
+  const [selected,setSelected]=useState(null);
+  const [filter,setFilter]=useState('all');
+  const filtered=filter==='all'?CERTIFICATES:CERTIFICATES.filter(c=>c.status===filter);
+  return (
+    <div style={{padding:'32px 32px 48px',maxWidth:1200,margin:'0 auto',width:'100%'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:24}}>
+        <div><SectionLabel text="Modul — Sertifikasi"/><h2 style={{fontSize:24,fontWeight:800}}>Registri Sertifikat IGNS</h2></div>
+        <div style={{display:'flex',gap:8}}>
+          {['all','active','expiring'].map(f=>(
+            <button key={f} onClick={()=>setFilter(f)} style={{background:filter===f?'var(--green-pale)':'#fff',border:`1.5px solid ${filter===f?'var(--green-mid)':'var(--border)'}`,color:filter===f?'var(--green-dark)':'var(--text-2)',borderRadius:8,padding:'6px 14px',fontSize:12.5,fontWeight:filter===f?600:400,cursor:'pointer',fontFamily:'var(--font-body)'}}>
+              {f==='all'?'Semua':f==='active'?'Aktif':'Segera Berakhir'}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div style={{background:'var(--bg-card)',border:'1.5px solid var(--border)',borderRadius:12,overflow:'hidden',boxShadow:'var(--shadow-sm)'}}>
+        <table style={{width:'100%',borderCollapse:'collapse'}}>
+          <thead><tr style={{background:'var(--bg-section)',borderBottom:'1.5px solid var(--border)'}}>
+            {['ID Sertifikat','Produk','Asal','CO₂ Total','Premium Harga','Pembeli','Grade','Status',''].map(h=>(
+              <th key={h} style={{padding:'12px 16px',textAlign:'left',fontSize:10.5,fontFamily:'var(--font-mono)',color:'var(--text-3)',letterSpacing:'0.07em',fontWeight:500}}>{h}</th>
+            ))}
+          </tr></thead>
+          <tbody>
+            {filtered.map((cert,i)=>(
+              <tr key={cert.id} onClick={()=>setSelected(selected?.id===cert.id?null:cert)} style={{borderBottom:'1px solid var(--border)',background:selected?.id===cert.id?'var(--green-pale)':i%2===0?'#fff':'var(--bg)',cursor:'pointer',transition:'background .13s'}}>
+                <td style={{padding:'13px 16px',fontFamily:'var(--font-mono)',fontSize:12,color:'var(--green-dark)',fontWeight:600}}>{cert.id}</td>
+                <td style={{padding:'13px 16px',fontSize:13,fontWeight:600}}>{cert.product}</td>
+                <td style={{padding:'13px 16px',fontSize:12,color:'var(--text-2)'}}>{cert.origin}</td>
+                <td style={{padding:'13px 16px'}}><span style={{fontSize:13,fontFamily:'var(--font-mono)',fontWeight:600,color:cert.co2Total<65?'var(--green-acc)':cert.co2Total<80?'var(--amber)':'var(--red)'}}>{cert.co2Total} kg</span></td>
+                <td style={{padding:'13px 16px'}}><span style={{color:'var(--gold)',fontFamily:'var(--font-mono)',fontSize:14,fontWeight:800}}>+{cert.premium}%</span></td>
+                <td style={{padding:'13px 16px',fontSize:12,color:'var(--text-2)'}}>{cert.buyer}</td>
+                <td style={{padding:'13px 16px'}}><span style={{fontFamily:'var(--font-mono)',fontSize:13,fontWeight:800,color:cert.grade.startsWith('A')?'var(--green-acc)':'var(--amber)'}}>{cert.grade}</span></td>
+                <td style={{padding:'13px 16px'}}><Badge text={cert.status==='active'?'Aktif':'Segera Berakhir'} color={cert.status==='active'?'var(--green-dark)':'var(--gold)'} bg={cert.status==='active'?'var(--green-light)':'var(--gold-light)'}/></td>
+                <td style={{padding:'13px 16px',color:'var(--text-3)',fontSize:16}}>›</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {selected&&(
+        <Card style={{marginTop:18,animation:'fadeInUp .2s ease both',borderColor:'var(--border-mid)',background:'var(--green-pale)'}}>
+          <div style={{display:'flex',justifyContent:'space-between',marginBottom:18}}>
+            <div><SectionLabel text="Detail Sertifikat"/><h3 style={{fontSize:17,fontWeight:800,color:'var(--green-dark)'}}>{selected.id}</h3></div>
+            <button onClick={()=>setSelected(null)} style={{background:'var(--bg-section)',border:'1px solid var(--border)',color:'var(--text-2)',borderRadius:6,width:28,height:28,cursor:'pointer',fontSize:15}}>×</button>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:12}}>
+            {[
+              {l:'Produk',v:selected.product},{l:'Asal Tambang',v:selected.origin},
+              {l:'Total CO₂',v:`${selected.co2Total} kg CO₂e/t Ni`},{l:'Premium Harga',v:`+${selected.premium}%`},
+              {l:'Grade',v:selected.grade},{l:'Pembeli Akhir',v:selected.buyer},
+              {l:'Tanggal Terbit',v:selected.issued},{l:'Berlaku Hingga',v:selected.expires},
+            ].map(item=>(
+              <div key={item.l} style={{background:'#fff',borderRadius:8,padding:'12px 14px',border:'1.5px solid var(--border)'}}>
+                <div style={{fontSize:10,color:'var(--text-3)',fontFamily:'var(--font-mono)',marginBottom:4,letterSpacing:'0.06em'}}>{item.l.toUpperCase()}</div>
+                <div style={{fontSize:13,fontWeight:700,color:item.l==='Premium Harga'?'var(--gold)':item.l==='Total CO₂'?'var(--green-acc)':'var(--text-1)'}}>{item.v}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{marginTop:14,display:'flex',gap:16,alignItems:'center'}}>
+            <div style={{width:68,height:68,border:'2px solid var(--green-mid)',borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontSize:26,background:'#fff'}}>▦</div>
+            <div>
+              <div style={{fontSize:13,fontWeight:700,marginBottom:4}}>QR Verifikasi Publik</div>
+              <div style={{fontSize:12,color:'var(--text-2)'}}>Scan untuk memverifikasi keaslian sertifikat ini melalui portal IGNS</div>
+              <div style={{fontSize:11,fontFamily:'var(--font-mono)',color:'var(--text-3)',marginTop:4}}>igns.kemenperin.go.id/verify/{selected.id}</div>
+            </div>
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+/* ── TREND VIEW ── */
+function TrendView(){
+  const [activeLines, setActiveLines] = useState(Object.keys(TREND_DATA));
+  const [hoveredPoint, setHoveredPoint] = useState(null);
+
+  const W=700, H=320, PAD={top:24,right:24,bottom:48,left:56};
+  const plotW=W-PAD.left-PAD.right;
+  const plotH=H-PAD.top-PAD.bottom;
+  const minV=30, maxV=150;
+
+  const xScale = i => PAD.left + (i/(TREND_MONTHS.length-1))*plotW;
+  const yScale = v => PAD.top + plotH - ((v-minV)/(maxV-minV))*plotH;
+
+  const linePoints = (key) => TREND_DATA[key].map((v,i)=>`${xScale(i)},${yScale(v)}`).join(' ');
+
+  const toggle = key => setActiveLines(prev => prev.includes(key) ? prev.filter(k=>k!==key) : [...prev,key]);
+
+  return (
+    <div style={{padding:'32px 32px 48px',maxWidth:1200,margin:'0 auto',width:'100%'}}>
+      <div style={{marginBottom:28}}>
+        <SectionLabel text="Modul — Tren & Analisis"/>
+        <h2 style={{fontSize:24,fontWeight:800}}>Tren Intensitas Karbon IGNS</h2>
+        <p style={{color:'var(--text-2)',fontSize:13.5,marginTop:6,maxWidth:600,lineHeight:1.65}}>Perbandingan intensitas emisi CO₂ produk berdasarkan grade sertifikasi dari waktu ke waktu, dibandingkan dengan rerata global. Data diperbarui setiap kuartal berdasarkan laporan auditor.</p>
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr auto',gap:24,alignItems:'start'}}>
+        {/* Chart */}
+        <Card style={{padding:'24px 20px 16px',overflow:'hidden',position:'relative'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+            <div style={{fontWeight:700,fontSize:15}}>Intensitas CO₂ per Grade (2024–2025)</div>
+            <div style={{fontSize:11,color:'var(--text-3)',fontFamily:'var(--font-mono)'}}>kg CO₂e / ton Ni</div>
+          </div>
+
+          {/* Legend toggle */}
+          <div style={{display:'flex',gap:8,marginBottom:16,flexWrap:'wrap'}}>
+            {Object.keys(TREND_DATA).map(key=>(
+              <button key={key} onClick={()=>toggle(key)} style={{display:'flex',alignItems:'center',gap:6,background:activeLines.includes(key)?TREND_COLORS[key]+'18':'var(--bg-section)',border:`1.5px solid ${activeLines.includes(key)?TREND_COLORS[key]:'var(--border)'}`,borderRadius:20,padding:'4px 12px',cursor:'pointer',fontSize:12,fontWeight:600,color:activeLines.includes(key)?TREND_COLORS[key]:'var(--text-3)',transition:'all .15s'}}>
+                <div style={{width:8,height:8,borderRadius:'50%',background:activeLines.includes(key)?TREND_COLORS[key]:'var(--border)'}}/>
+                {key==='Global'?'Rerata Global':`Grade ${key}`}
+              </button>
+            ))}
+          </div>
+
+          <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',height:'auto',overflow:'visible'}}>
+            {/* Grid lines */}
+            {[50,75,100,125].map(v=>(
+              <g key={v}>
+                <line x1={PAD.left} y1={yScale(v)} x2={PAD.left+plotW} y2={yScale(v)} stroke="var(--border)" strokeWidth="1" strokeDasharray="4 4"/>
+                <text x={PAD.left-8} y={yScale(v)+4} textAnchor="end" fontSize="11" fill="var(--text-3)" fontFamily="'DM Mono',monospace">{v}</text>
+              </g>
+            ))}
+
+            {/* X axis labels */}
+            {TREND_MONTHS.map((m,i)=>(
+              <text key={m} x={xScale(i)} y={H-PAD.bottom+18} textAnchor="middle" fontSize="11" fill="var(--text-3)" fontFamily="'DM Mono',monospace">{m}</text>
+            ))}
+
+            {/* Threshold line */}
+            <line x1={PAD.left} y1={yScale(100)} x2={PAD.left+plotW} y2={yScale(100)} stroke="var(--red)" strokeWidth="1" strokeDasharray="6 3" opacity=".5"/>
+            <text x={PAD.left+plotW+4} y={yScale(100)+4} fontSize="10" fill="var(--red)" fontFamily="'DM Mono',monospace" opacity=".7">Batas</text>
+
+            {/* Lines + dots */}
+            {Object.keys(TREND_DATA).filter(k=>activeLines.includes(k)).map(key=>(
+              <g key={key}>
+                {/* Area fill */}
+                <polygon
+                  points={[
+                    `${PAD.left},${PAD.top+plotH}`,
+                    ...TREND_DATA[key].map((v,i)=>`${xScale(i)},${yScale(v)}`),
+                    `${PAD.left+plotW},${PAD.top+plotH}`
+                  ].join(' ')}
+                  fill={TREND_COLORS[key]} opacity="0.07"
+                />
+                {/* Line */}
+                <polyline points={linePoints(key)} fill="none" stroke={TREND_COLORS[key]} strokeWidth={key==='Global'?1.5:2.5} strokeLinejoin="round" strokeLinecap="round" strokeDasharray={key==='Global'?'5 3':undefined}/>
+                {/* Data points */}
+                {TREND_DATA[key].map((v,i)=>(
+                  <circle key={i} cx={xScale(i)} cy={yScale(v)} r={hoveredPoint?.key===key&&hoveredPoint?.i===i?6:4}
+                    fill="#fff" stroke={TREND_COLORS[key]} strokeWidth="2.5"
+                    style={{cursor:'pointer',transition:'r .15s'}}
+                    onMouseEnter={()=>setHoveredPoint({key,i,v,x:xScale(i),y:yScale(v)})}
+                    onMouseLeave={()=>setHoveredPoint(null)}
+                  />
+                ))}
+              </g>
+            ))}
+
+            {/* Axes */}
+            <line x1={PAD.left} y1={PAD.top} x2={PAD.left} y2={PAD.top+plotH} stroke="var(--border-mid)" strokeWidth="1.5"/>
+            <line x1={PAD.left} y1={PAD.top+plotH} x2={PAD.left+plotW} y2={PAD.top+plotH} stroke="var(--border-mid)" strokeWidth="1.5"/>
+          </svg>
+
+          {/* Hover tooltip */}
+          {hoveredPoint&&(
+            <div style={{position:'absolute',left:hoveredPoint.x/W*100+'%',top:(hoveredPoint.y/H*100)+'%',transform:'translate(-50%,-120%)',background:'#fff',border:'1.5px solid var(--border-mid)',borderRadius:8,padding:'8px 12px',fontSize:12,boxShadow:'var(--shadow-md)',pointerEvents:'none',whiteSpace:'nowrap',zIndex:10}}>
+              <div style={{fontWeight:700,color:TREND_COLORS[hoveredPoint.key],marginBottom:2}}>{hoveredPoint.key==='Global'?'Rerata Global':`Grade ${hoveredPoint.key}`}</div>
+              <div style={{color:'var(--text-1)',fontFamily:'var(--font-mono)',fontWeight:600}}>{hoveredPoint.v} kg CO₂e/t Ni</div>
+              <div style={{color:'var(--text-3)',fontSize:11}}>{TREND_MONTHS[hoveredPoint.i]}</div>
+            </div>
+          )}
+        </Card>
+
+        {/* Side stats */}
+        <div style={{display:'flex',flexDirection:'column',gap:14,minWidth:200}}>
+          <Card>
+            <SectionLabel text="Penurunan CO₂ (YoY)"/>
+            <div style={{fontSize:32,fontWeight:800,color:'var(--green-acc)',lineHeight:1}}>−12%</div>
+            <div style={{fontSize:12,color:'var(--text-2)',marginTop:4}}>Grade A+ (Jan 24 → Mar 25)</div>
+          </Card>
+          <Card>
+            <SectionLabel text="Gap vs. Global"/>
+            <div style={{fontSize:32,fontWeight:800,color:'var(--sky)',lineHeight:1}}>−72 kg</div>
+            <div style={{fontSize:12,color:'var(--text-2)',marginTop:4}}>A+ vs. Rerata Global</div>
+          </Card>
+          <Card>
+            <SectionLabel text="Target 2030"/>
+            <div style={{fontSize:32,fontWeight:800,color:'var(--gold)',lineHeight:1}}>45 kg</div>
+            <div style={{fontSize:12,color:'var(--text-2)',marginTop:4}}>CO₂e/t Ni (net-zero path)</div>
+          </Card>
+          <Card style={{background:'var(--green-pale)',borderColor:'var(--border-mid)'}}>
+            <div style={{fontSize:12,color:'var(--green-dark)',lineHeight:1.6}}>
+              Tren menunjukkan konsistensi penurunan emisi di semua grade, didorong oleh peningkatan porsi energi terbarukan dan efisiensi proses smelting.
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      {/* Monthly breakdown table */}
+      <Card style={{marginTop:20}}>
+        <SectionLabel text="Rincian Bulanan — Intensitas CO₂ (kg CO₂e/t Ni)"/>
+        <div style={{overflowX:'auto'}}>
+          <table style={{width:'100%',borderCollapse:'collapse',fontSize:12.5}}>
+            <thead>
+              <tr style={{borderBottom:'1.5px solid var(--border)'}}>
+                <th style={{padding:'10px 16px',textAlign:'left',fontWeight:600,color:'var(--text-2)',fontSize:12}}>Grade</th>
+                {TREND_MONTHS.map(m=>(
+                  <th key={m} style={{padding:'10px 12px',textAlign:'center',fontFamily:'var(--font-mono)',fontSize:11,color:'var(--text-3)',fontWeight:500}}>{m}</th>
+                ))}
+                <th style={{padding:'10px 12px',textAlign:'center',fontSize:12,color:'var(--text-2)',fontWeight:600}}>Perubahan</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(TREND_DATA).map(([key,vals])=>{
+                const change=vals[vals.length-1]-vals[0];
+                return (
+                  <tr key={key} style={{borderBottom:'1px solid var(--border)'}}>
+                    <td style={{padding:'10px 16px'}}>
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <div style={{width:10,height:10,borderRadius:'50%',background:TREND_COLORS[key]}}/>
+                        <span style={{fontWeight:700,color:TREND_COLORS[key]}}>{key==='Global'?'Rerata Global':`Grade ${key}`}</span>
+                      </div>
+                    </td>
+                    {vals.map((v,i)=>(
+                      <td key={i} style={{padding:'10px 12px',textAlign:'center',fontFamily:'var(--font-mono)',fontSize:12,color:v<75?'var(--green-acc)':v<100?'var(--amber)':'var(--red)',fontWeight:600}}>{v}</td>
+                    ))}
+                    <td style={{padding:'10px 12px',textAlign:'center',fontFamily:'var(--font-mono)',fontSize:12,color:change<0?'var(--green-acc)':'var(--red)',fontWeight:700}}>{change>0?'+':''}{change}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+/* ── MAP VIEW ── */
+function MapView(){
+  const [selected,setSelected]=useState(null);
+  const [filter,setFilter]=useState('all');
+  const [tooltip,setTooltip]=useState(null);
+
+  const filtered = filter==='all' ? MAP_LOCATIONS : MAP_LOCATIONS.filter(l=>l.type===filter);
+
+  return (
+    <div style={{padding:'32px 32px 48px',maxWidth:1200,margin:'0 auto',width:'100%'}}>
+      <div style={{marginBottom:24}}>
+        <SectionLabel text="Modul — Peta Sebaran"/>
+        <h2 style={{fontSize:24,fontWeight:800}}>Sebaran Fasilitas Nikel Indonesia</h2>
+        <p style={{color:'var(--text-2)',fontSize:13.5,marginTop:6,maxWidth:600,lineHeight:1.65}}>Distribusi geografis tambang, smelter, refinery, dan fasilitas produksi prekursor NMC yang terdaftar dalam sistem sertifikasi IGNS.</p>
+      </div>
+
+      {/* Filter */}
+      <div style={{display:'flex',gap:8,marginBottom:20,flexWrap:'wrap'}}>
+        {['all','mine','smelter','refinery','precursor'].map(f=>(
+          <button key={f} onClick={()=>setFilter(f)} style={{display:'flex',alignItems:'center',gap:6,background:filter===f?(f==='all'?'var(--green-pale)':TYPE_COLORS[f]+'18'):'#fff',border:`1.5px solid ${filter===f?(f==='all'?'var(--green-mid)':TYPE_COLORS[f]):'var(--border)'}`,color:filter===f?(f==='all'?'var(--green-dark)':TYPE_COLORS[f]):'var(--text-2)',borderRadius:8,padding:'6px 14px',cursor:'pointer',fontSize:12.5,fontWeight:filter===f?700:400,fontFamily:'var(--font-body)',transition:'all .14s'}}>
+            {f!=='all'&&<div style={{width:8,height:8,borderRadius:'50%',background:filter===f?TYPE_COLORS[f]:'var(--border)'}}/>}
+            {f==='all'?'Semua Fasilitas':TYPE_LABELS[f]}
+          </button>
+        ))}
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr 320px',gap:20,alignItems:'start'}}>
+        {/* Map with real PNG background */}
+        <Card style={{padding:16,overflow:'hidden',position:'relative'}}>
+          {/* Map container — preserves 700:350 = 2:1 aspect ratio */}
+          <div style={{position:'relative',width:'100%',paddingBottom:'50%',background:'#dbeafe',borderRadius:8,overflow:'hidden'}}>
+            {/* Map background: ocean + island PNG as CSS bg so coordinates are exact */}
+            <div style={{
+              position:'absolute', inset:0,
+              background:'linear-gradient(160deg,#c8e6f8 0%,#dbeafe 100%)',
+            }}/>
+            {/* Island silhouette tinted green via CSS filter */}
+            <div style={{
+              position:'absolute', inset:0,
+              backgroundImage:'url("indonesia-map.png")',
+              backgroundSize:'100% 100%',
+              backgroundRepeat:'no-repeat',
+              backgroundPosition:'center',
+              filter:'invert(1) sepia(1) saturate(2) hue-rotate(88deg) brightness(.78)',
+              opacity:.92,
+            }}/>
+
+            {/* SVG overlay — viewBox 200×100 matches 2:1 container exactly */}
+            <svg
+              viewBox="0 0 200 100"
+              style={{position:'absolute',inset:0,width:'100%',height:'100%'}}
+              preserveAspectRatio="none"
+            >
+              {filtered.map(loc => {
+                const isSelected = selected?.id === loc.id;
+                const color = TYPE_COLORS[loc.type];
+                const vx = loc.x;
+                const vy = loc.y;
+                return (
+                  <g key={loc.id} style={{cursor:'pointer'}}
+                    onClick={() => setSelected(selected?.id===loc.id ? null : loc)}
+                    onMouseEnter={() => setTooltip(loc)}
+                    onMouseLeave={() => setTooltip(null)}
+                  >
+                    {/* Outer ring when selected */}
+                    {isSelected && <circle cx={vx} cy={vy} r="4" fill={color} opacity=".18"/>}
+                    {/* Shadow */}
+                    <circle cx={vx} cy={vy+.4} r={isSelected?2.8:2.2} fill="rgba(0,0,0,.2)"/>
+                    {/* Main dot */}
+                    <circle cx={vx} cy={vy} r={isSelected?2.8:2.2} fill={color} stroke="#fff" strokeWidth="1"/>
+                    {/* Inner white dot */}
+                    <circle cx={vx} cy={vy} r=".8" fill="#fff" opacity=".9"/>
+                    {/* Grade label when selected */}
+                    {isSelected && (
+                      <text x={vx} y={vy-4} textAnchor="middle" fontSize="3.5" fill={color} fontWeight="700" fontFamily="'Plus Jakarta Sans',sans-serif"
+                        style={{filter:'drop-shadow(0 1px 2px #fff)'}}>
+                        {loc.grade}
+                      </text>
+                    )}
+                  </g>
+                );
+              })}
+            </svg>
+
+            {/* Hover tooltip */}
+            {tooltip && (
+              <div style={{
+                position:'absolute', bottom:12, left:'50%', transform:'translateX(-50%)',
+                background:'#fff', border:'1.5px solid var(--border-mid)',
+                borderRadius:10, padding:'10px 14px', boxShadow:'var(--shadow-md)',
+                minWidth:200, pointerEvents:'none', animation:'fadeInUp .15s ease both', zIndex:5,
+              }}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
+                  <div style={{width:10,height:10,borderRadius:'50%',background:TYPE_COLORS[tooltip.type],flexShrink:0}}/>
+                  <div style={{fontWeight:700,fontSize:13}}>{tooltip.name}</div>
+                </div>
+                <div style={{fontSize:12,color:'var(--text-2)',marginBottom:6}}>{tooltip.region}</div>
+                <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                  <Badge text={TYPE_LABELS[tooltip.type]} color={TYPE_COLORS[tooltip.type]} bg={TYPE_COLORS[tooltip.type]+'18'}/>
+                  <Badge text={`Grade ${tooltip.grade}`} color={tooltip.grade.startsWith('A')?'var(--green-dark)':'var(--amber)'} bg={tooltip.grade.startsWith('A')?'var(--green-light)':'var(--gold-light)'}/>
+                  <Badge text={`${tooltip.co2} kg CO₂`} color="var(--sky)" bg="var(--sky-light)"/>
+                </div>
+              </div>
+            )}
+
+            {/* Legend overlay */}
+            <div style={{position:'absolute',top:10,left:10,background:'rgba(255,255,255,.88)',backdropFilter:'blur(6px)',border:'1px solid var(--border)',borderRadius:8,padding:'8px 10px',display:'flex',flexDirection:'column',gap:5}}>
+              {Object.entries(TYPE_LABELS).map(([type,label])=>(
+                <div key={type} style={{display:'flex',alignItems:'center',gap:6}}>
+                  <div style={{width:9,height:9,borderRadius:'50%',background:TYPE_COLORS[type],flexShrink:0}}/>
+                  <span style={{fontSize:11,color:'var(--text-2)',fontWeight:500}}>{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+
+        {/* Location list */}
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+          <div style={{fontWeight:700,fontSize:14,marginBottom:4}}>
+            {filtered.length} Fasilitas {filter!=='all'?TYPE_LABELS[filter]:'Terdaftar'}
+          </div>
+          {filtered.map(loc=>(
+            <div key={loc.id} onClick={()=>setSelected(selected?.id===loc.id?null:loc)}
+              style={{background:selected?.id===loc.id?'var(--green-pale)':'#fff',border:`1.5px solid ${selected?.id===loc.id?'var(--green-mid)':'var(--border)'}`,borderRadius:10,padding:'12px 14px',cursor:'pointer',transition:'all .15s',boxShadow:selected?.id===loc.id?'var(--shadow-md)':'var(--shadow-sm)'}}>
+              <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:8,marginBottom:6}}>
+                <div>
+                  <div style={{fontWeight:700,fontSize:13,lineHeight:1.3}}>{loc.name}</div>
+                  <div style={{fontSize:11.5,color:'var(--text-2)',marginTop:2}}>{loc.region}</div>
+                </div>
+                <Badge text={`Grade ${loc.grade}`} color={loc.grade.startsWith('A')?'var(--green-dark)':'var(--amber)'} bg={loc.grade.startsWith('A')?'var(--green-light)':'var(--gold-light)'}/>
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:10}}>
+                <div style={{display:'flex',alignItems:'center',gap:5}}>
+                  <div style={{width:8,height:8,borderRadius:'50%',background:TYPE_COLORS[loc.type]}}/>
+                  <span style={{fontSize:11.5,color:'var(--text-2)'}}>{TYPE_LABELS[loc.type]}</span>
+                </div>
+                <div style={{flex:1,height:4,background:'var(--bg-section)',borderRadius:2}}>
+                  <div style={{width:`${(loc.co2/150)*100}%`,height:'100%',background:loc.co2<70?'var(--green-acc)':loc.co2<100?'var(--amber)':'var(--red)',borderRadius:2}}/>
+                </div>
+                <span style={{fontSize:11,fontFamily:'var(--font-mono)',color:loc.co2<70?'var(--green-acc)':loc.co2<100?'var(--amber)':'var(--red)',fontWeight:600,whiteSpace:'nowrap'}}>{loc.co2} kg</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Root ── */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accentColor": "#16a34a",
+  "showPremiumBanner": true
+}/*EDITMODE-END*/;
+
+function App(){
+  const [activeTab,setActiveTab]=useState('dashboard');
+  const [t,setTweak]=useTweaks(TWEAK_DEFAULTS);
+  useEffect(()=>{document.documentElement.style.setProperty('--green-acc',t.accentColor);},[t.accentColor]);
+  return (
+    <>
+      <Header activeTab={activeTab} setActiveTab={setActiveTab}/>
+      <main style={{flex:1}}>
+        {activeTab==='dashboard'    && <DashboardView/>}
+        {activeTab==='supplychain'  && <SupplyChainView/>}
+        {activeTab==='certificates' && <CertificatesView/>}
+        {activeTab==='tren'         && <TrendView/>}
+        {activeTab==='peta'         && <MapView/>}
+      </main>
+      <footer style={{borderTop:'1.5px solid var(--border)',padding:'14px 32px',display:'flex',justifyContent:'space-between',alignItems:'center',fontSize:11.5,color:'var(--text-3)',background:'#fff'}}>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <img src="kemenperin-logo.png" alt="Kemenperin" style={{height:22,opacity:.65}}/>
+          <span>© 2025 IGNS — Indonesia Green Nickel Standard · Kemenperin × KLHK × BSN</span>
+        </div>
+        <div style={{display:'flex',gap:16,fontFamily:'var(--font-mono)',fontSize:11}}>
+          <span>v2.2.0</span>
+          <span style={{color:'var(--green-acc)',display:'flex',alignItems:'center',gap:5}}><LiveDot size={6}/> Sistem Operasional</span>
+        </div>
+      </footer>
+      <TweaksPanel>
+        <TweakSection label="Tampilan">
+          <TweakColor  label="Warna Aksen"             value={t.accentColor}       onChange={v=>setTweak('accentColor',v)}/>
+          <TweakToggle label="Tampilkan Banner Premium" value={t.showPremiumBanner} onChange={v=>setTweak('showPremiumBanner',v)}/>
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
